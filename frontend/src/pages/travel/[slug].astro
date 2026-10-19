@@ -1,0 +1,62 @@
+---
+import ArchiveHeader from "../../components/ArchiveHeader.astro";
+import ArchiveImage from "../../components/ArchiveImage.astro";
+import ArchiveLayout from "../../layouts/ArchiveLayout.astro";
+import { getTrip, getTripEntries, type EntryKind } from "../../utils/archive";
+
+const trip = await getTrip(Astro.params.slug!);
+if (!trip) return Astro.rewrite("/404");
+const entries = await getTripEntries(trip._id);
+const types: { key: EntryKind; label: string; unit: string }[] = [
+  { key: "webtoon", label: "웹툰", unit: "화" },
+  { key: "video", label: "영상", unit: "편" },
+  { key: "photo", label: "사진 포스팅", unit: "편" },
+];
+---
+<ArchiveLayout title={`${trip.title} — 여행 아카이브`}>
+  <main class="archive-wrap">
+    <ArchiveHeader back={{ href: "/", label: "전체 여행" }} />
+    {trip.news?.length ? <div class="archive-chips">
+      {trip.news.map((news) => news.url
+        ? <a class="archive-chip news" href={news.url} target="_blank" rel="noopener noreferrer">{news.label}</a>
+        : <span class="archive-chip news">{news.label}</span>)}
+    </div> : null}
+    <div class="archive-cover"><ArchiveImage image={trip.cover} label="대표 이미지" class="archive-media" eager /></div>
+    <div class="archive-heading">
+      <div class="archive-place">{trip.country} {trip.city && <span class="archive-city">{trip.city}</span>}</div>
+      <h1>{trip.title}</h1>
+      {trip.period && <div class="archive-period">{trip.period}</div>}
+    </div>
+    <div class="archive-tabs" role="group" aria-label="콘텐츠 종류" data-archive-filters>
+      <button class="archive-tab" type="button" data-filter="all" aria-pressed="true">전체</button>
+      {types.map((type) => <button class="archive-tab" type="button" data-filter={type.key} aria-pressed="false">{type.label}<small>{entries.filter((entry) => entry.kind === type.key).length}</small></button>)}
+    </div>
+    <div data-archive-items>
+      {types.map((type) => {
+        const items = entries.filter((entry) => entry.kind === type.key);
+        return <section class="archive-section" data-category={type.key}>
+          <div class="archive-section-head"><h2>{type.label}</h2><span>총 {items.length}{type.unit}</span></div>
+          {items.length ? <div class="archive-card-grid">
+            {items.map((entry) => <a class:list={["archive-card", entry.kind]} href={`/travel/${trip.slug.current}/${entry.slug.current}`}>
+              <div class="archive-thumb"><ArchiveImage image={entry.thumbnail || entry.images?.[0]} label="썸네일" class="archive-media" /></div>
+              {entry.kind === "webtoon" && entry.episode && <div class="archive-meta">{entry.episode}화</div>}
+              <div class="archive-title">{entry.title}</div>
+              {(entry.date || entry.location) && <div class="archive-meta">{[entry.date, entry.location].filter(Boolean).join(" · ")}</div>}
+            </a>)}
+          </div> : <div class="archive-empty">아직 올린 {type.label}이 없어요.</div>}
+        </section>;
+      })}
+    </div>
+  </main>
+</ArchiveLayout>
+
+<script>
+  const filters = document.querySelector("[data-archive-filters]");
+  const items = document.querySelectorAll<HTMLElement>("[data-archive-items] [data-category]");
+  filters?.addEventListener("click", (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>("[data-filter]");
+    if (!button) return;
+    filters.querySelectorAll("[data-filter]").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
+    items.forEach((item) => { item.hidden = button.dataset.filter !== "all" && item.dataset.category !== button.dataset.filter; });
+  });
+</script>

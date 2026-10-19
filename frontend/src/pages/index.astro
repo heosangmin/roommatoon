@@ -1,17 +1,68 @@
 ---
-import Card from "../components/Card.astro";
-import Welcome from "../components/Welcome.astro";
-import Layout from "../layouts/Layout.astro";
-import { getPosts } from "../utils/sanity";
+import ArchiveHeader from "../components/ArchiveHeader.astro";
+import ArchiveImage from "../components/ArchiveImage.astro";
+import ArchiveLayout from "../layouts/ArchiveLayout.astro";
+import { getArchiveSettings, getEntryCounts, getTrips } from "../utils/archive";
 
-const posts = await getPosts();
+const [settings, trips, entries] = await Promise.all([getArchiveSettings(), getTrips(), getEntryCounts()]);
+const brand = settings?.title || "ohayo jay";
+const featured = trips.find((trip) => trip.featured) || trips[0];
+const countries = [...new Set(trips.map((trip) => trip.country))];
+const count = (id: string, kind: string) => entries.filter((entry) => entry.tripId === id && entry.kind === kind).length;
 ---
 
-<Layout
-  title="Astro + Sanity"
-  description="A blog built with Astro and Sanity."
->
-  <section>
-    {posts.length ? posts.map((post) => <Card post={post} />) : <Welcome />}
-  </section>
-</Layout>
+<ArchiveLayout title={`${brand} — 여행 아카이브`} description={settings?.intro}>
+  <main class="archive-wrap">
+    <ArchiveHeader brand={brand} />
+    {featured && <a class="archive-hero" href={`/travel/${featured.slug.current}`}>
+      <div class="archive-hero-media">
+        <ArchiveImage image={featured.cover} label="대표 이미지" class="archive-media" eager />
+        <span class="archive-pill">{featured.featured ? "대표 여행" : "최근 여행"}</span>
+      </div>
+      <div class="archive-place">{featured.country} {featured.city && <span class="archive-city">{featured.city}</span>}
+        {featured.news?.map((news) => <span class="archive-chip news">{news.label}</span>)}
+      </div>
+      <div class="archive-hero-title">{featured.title}</div>
+      {featured.period && <div class="archive-period">{featured.period}</div>}
+      <div class="archive-chips">
+        {count(featured._id, "webtoon") > 0 && <span class="archive-chip">웹툰 {count(featured._id, "webtoon")}화</span>}
+        {count(featured._id, "video") > 0 && <span class="archive-chip">영상 {count(featured._id, "video")}편</span>}
+        {count(featured._id, "photo") > 0 && <span class="archive-chip">사진 포스팅 {count(featured._id, "photo")}편</span>}
+      </div>
+    </a>}
+    <h1 class="archive-all">모든 여행</h1>
+    <p class="archive-lead">{settings?.intro || "여행마다 웹툰, 영상, 사진 포스팅을 함께 모아 봐요."}</p>
+    {trips.length > 0 ? <>
+      <div class="archive-tabs" role="group" aria-label="나라 선택" data-archive-filters>
+        <button class="archive-tab" type="button" data-filter="all" aria-pressed="true">전체</button>
+        {countries.map((country) => <button class="archive-tab" type="button" data-filter={country} aria-pressed="false">{country}<small>{trips.filter((trip) => trip.country === country).length}</small></button>)}
+      </div>
+      <div class="archive-trip-grid" data-archive-items>
+        {trips.map((trip) => <a class="archive-trip" href={`/travel/${trip.slug.current}`} data-category={trip.country}>
+          <div class="archive-thumb"><ArchiveImage image={trip.cover} label="대표 이미지" class="archive-media" /></div>
+          <div class="archive-place">{trip.country} {trip.city && <span class="archive-city">{trip.city}</span>}
+            {trip.news?.map((news) => <span class="archive-chip news">{news.label}</span>)}
+          </div>
+          <div class="archive-title">{trip.title}</div>
+          {trip.period && <div class="archive-period">{trip.period}</div>}
+          <div class="archive-chips">
+            {count(trip._id, "webtoon") > 0 && <span class="archive-chip">웹툰 {count(trip._id, "webtoon")}화</span>}
+            {count(trip._id, "video") > 0 && <span class="archive-chip">영상 {count(trip._id, "video")}편</span>}
+            {count(trip._id, "photo") > 0 && <span class="archive-chip">사진 포스팅 {count(trip._id, "photo")}편</span>}
+          </div>
+        </a>)}
+      </div>
+    </> : <p class="archive-empty">아직 등록된 여행이 없어요. Studio에서 ‘여행’을 추가해 주세요.</p>}
+  </main>
+</ArchiveLayout>
+
+<script>
+  const filters = document.querySelector("[data-archive-filters]");
+  const items = document.querySelectorAll<HTMLElement>("[data-archive-items] [data-category]");
+  filters?.addEventListener("click", (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>("[data-filter]");
+    if (!button) return;
+    filters.querySelectorAll("[data-filter]").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
+    items.forEach((item) => { item.hidden = button.dataset.filter !== "all" && item.dataset.category !== button.dataset.filter; });
+  });
+</script>

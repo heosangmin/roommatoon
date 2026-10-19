@@ -18,7 +18,18 @@ export default defineConfig({
   projectId,
   dataset,
   plugins: [
-    structureTool(),
+    structureTool({
+      structure: (S) => S.list().id('content').title('콘텐츠').items([
+        S.listItem().id('archiveSettings').title('여행 아카이브 설정').child(
+          S.document().schemaType('archiveSettings').documentId('archiveSettings'),
+        ),
+        S.documentTypeListItem('trip').title('여행'),
+        S.documentTypeListItem('archiveEntry').title('여행 콘텐츠'),
+        S.documentTypeListItem('archiveProduct').title('굿즈'),
+        S.divider(),
+        S.documentTypeListItem('post').title('기존 블로그 글'),
+      ]),
+    }),
     presentationTool({
       previewUrl,
       resolve: {

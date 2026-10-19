@@ -1,0 +1,26 @@
+---
+import { buildSrcSet, urlFor } from "../utils/image";
+import type { SanityImage } from "../utils/sanity";
+
+interface Props {
+  image?: SanityImage;
+  label?: string;
+  class?: string;
+  eager?: boolean;
+}
+const { image, label = "이미지 준비 중", class: className = "", eager = false } = Astro.props;
+---
+
+{image?.asset ? (
+  <img
+    class={className}
+    src={urlFor(image).width(760).auto("format").quality(82).url()}
+    srcset={buildSrcSet(image, [380, 760, 1200], 82)}
+    sizes="(max-width: 760px) 100vw, 760px"
+    width={image.width}
+    height={image.height}
+    alt={image.alt || ""}
+    loading={eager ? "eager" : "lazy"}
+    decoding="async"
+  />
+) : <div class:list={["archive-placeholder", className]}>{label}</div>}

@@ -8,7 +8,7 @@ const token = import.meta.env.SANITY_API_READ_TOKEN;
 
 // visualEditingEnabled=true: fetch draft content with stega encoding (local/staging with Presentation tool)
 // visualEditingEnabled=false: fetch published content from CDN (production)
-async function loadQuery<T>(query: string, params: Record<string, any> = {}): Promise<T> {
+export async function loadQuery<T>(query: string, params: Record<string, any> = {}): Promise<T> {
   return sanityClient.fetch<T>(
     query,
     params,

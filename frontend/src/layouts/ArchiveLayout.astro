@@ -1,0 +1,21 @@
+---
+import "../styles/archive.css";
+interface Props { title: string; description?: string }
+const { title, description } = Astro.props;
+---
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet" />
+    <link rel="canonical" href={Astro.url} />
+    {description && <meta name="description" content={description} />}
+    <title>{title}</title>
+  </head>
+  <body class="archive-page">
+    <slot />
+  </body>
+</html>

@@ -1,0 +1,11 @@
+---
+interface Props { brand?: string; back?: { href: string; label: string } }
+const { brand = "ohayo jay", back } = Astro.props;
+---
+<header class="archive-top">
+  {back ? <a class="archive-link" href={back.href}>← {back.label}</a> : <a class="archive-brand" href="/">{brand}</a>}
+  <nav aria-label="주 메뉴">
+    <a class="archive-link" href="/about">작가 소개</a>
+    <a class="archive-link" href="/goods">굿즈</a>
+  </nav>
+</header>

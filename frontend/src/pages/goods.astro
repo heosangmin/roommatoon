@@ -1,0 +1,42 @@
+---
+import ArchiveHeader from "../components/ArchiveHeader.astro";
+import ArchiveImage from "../components/ArchiveImage.astro";
+import ArchiveLayout from "../layouts/ArchiveLayout.astro";
+import { getArchiveProducts, getArchiveSettings } from "../utils/archive";
+
+const [settings, products] = await Promise.all([getArchiveSettings(), getArchiveProducts()]);
+const categories = [...new Set(products.map((product) => product.category))];
+---
+<ArchiveLayout title="굿즈 — 여행 아카이브">
+  <main class="archive-wrap">
+    <ArchiveHeader back={{ href: "/", label: "여행 아카이브" }} />
+    <h1>굿즈</h1>
+    <p class="archive-lead">여행에서 나온 그림을 스티커, 엽서, 마스킹테이프로 만들었어요.</p>
+    {settings?.shopUrl && <p><a class="archive-buy" href={settings.shopUrl} target="_blank" rel="noopener noreferrer">마플 샵 전체 보기 ↗</a></p>}
+    {products.length ? <>
+      <div class="archive-tabs" role="group" aria-label="굿즈 종류" data-archive-filters>
+        <button class="archive-tab" type="button" data-filter="all" aria-pressed="true">전체<small>{products.length}</small></button>
+        {categories.map((category) => <button class="archive-tab" type="button" data-filter={category} aria-pressed="false">{category}<small>{products.filter((product) => product.category === category).length}</small></button>)}
+      </div>
+      <div class="archive-card-grid" data-archive-items>
+        {products.map((product) => <article class="archive-card archive-product" data-category={product.category}>
+          <div class="archive-thumb"><ArchiveImage image={product.image} label="상품 이미지" class="archive-media" /></div>
+          <div class="archive-title">{product.title}</div>
+          <div class="archive-meta">{[product.trip?.title, product.category].filter(Boolean).join(" · ")}</div>
+          {product.shopUrl && <a class="archive-buy" href={product.shopUrl} target="_blank" rel="noopener noreferrer">마플에서 구매하기 ↗</a>}
+        </article>)}
+      </div>
+    </> : <p class="archive-empty">아직 등록된 굿즈가 없어요.</p>}
+  </main>
+</ArchiveLayout>
+
+<script>
+  const filters = document.querySelector("[data-archive-filters]");
+  const items = document.querySelectorAll<HTMLElement>("[data-archive-items] [data-category]");
+  filters?.addEventListener("click", (event) => {
+    const button = (event.target as Element).closest<HTMLButtonElement>("[data-filter]");
+    if (!button) return;
+    filters.querySelectorAll("[data-filter]").forEach((tab) => tab.setAttribute("aria-pressed", String(tab === button)));
+    items.forEach((item) => { item.hidden = button.dataset.filter !== "all" && item.dataset.category !== button.dataset.filter; });
+  });
+</script>

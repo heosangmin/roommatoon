@@ -1,0 +1,44 @@
+---
+import { PortableText } from "astro-portabletext";
+import ArchiveImage from "../../../components/ArchiveImage.astro";
+import BodyImage from "../../../components/BodyImage.astro";
+import CodeBlock from "../../../components/CodeBlock.astro";
+import ArchiveLayout from "../../../layouts/ArchiveLayout.astro";
+import { getTrip, getTripEntries, youtubeEmbedUrl } from "../../../utils/archive";
+
+const trip = await getTrip(Astro.params.trip!);
+if (!trip) return Astro.rewrite("/404");
+const entries = await getTripEntries(trip._id);
+const entry = entries.find((item) => item.slug.current === Astro.params.entry);
+if (!entry) return Astro.rewrite("/404");
+const siblings = entries.filter((item) => item.kind === entry.kind);
+const index = siblings.findIndex((item) => item._id === entry._id);
+const previous = siblings[index - 1];
+const next = siblings[index + 1];
+const embedUrl = youtubeEmbedUrl(entry.videoUrl);
+const kindLabel = { webtoon: "웹툰", video: "영상", photo: "사진 포스팅" }[entry.kind];
+---
+<ArchiveLayout title={`${entry.title} — ${trip.title}`}>
+  <div class="archive-viewer-bar">
+    <a class="archive-link" href={`/travel/${trip.slug.current}`}>← 목록으로</a>
+    <div class="archive-viewer-title">{entry.episode ? `${entry.episode}화 · ` : ""}{entry.title}</div>
+    <span style="width:64px" aria-hidden="true"></span>
+  </div>
+  <main class="archive-viewer-body">
+    <h1>{entry.title}</h1>
+    {(entry.date || entry.location) && <div class="archive-meta">{[entry.date, entry.location].filter(Boolean).join(" · ")}</div>}
+    {entry.kind === "video" ? (embedUrl
+      ? <iframe class="archive-video" src={embedUrl} title={entry.title} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      : <p class="archive-empty">유튜브 영상 주소를 등록하면 여기에 표시됩니다.</p>) : null}
+    {entry.kind !== "video" && entry.images?.map((image) => <figure>
+      <ArchiveImage image={image} label="이미지 준비 중" class="archive-media" />
+      {image.caption && <figcaption>{image.caption}</figcaption>}
+    </figure>)}
+    {entry.body?.length ? <div class="archive-prose"><PortableText value={entry.body} components={{ type: { image: BodyImage, code: CodeBlock } }} /></div> : null}
+  </main>
+  <aside class="archive-note"><h2>{entry.kind === "webtoon" ? "작가의 말" : `${kindLabel} 설명`}</h2><p>{trip.title}</p></aside>
+  <nav class="archive-nav" aria-label="콘텐츠 이동">
+    {previous ? <a href={`/travel/${trip.slug.current}/${previous.slug.current}`}>← 이전 {kindLabel}</a> : <span>이전 {kindLabel}</span>}
+    {next ? <a href={`/travel/${trip.slug.current}/${next.slug.current}`}>다음 {kindLabel} →</a> : <span>다음 {kindLabel}</span>}
+  </nav>
+</ArchiveLayout>

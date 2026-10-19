@@ -1,0 +1,32 @@
+---
+import ArchiveHeader from "../components/ArchiveHeader.astro";
+import ArchiveImage from "../components/ArchiveImage.astro";
+import ArchiveLayout from "../layouts/ArchiveLayout.astro";
+import { getArchiveSettings } from "../utils/archive";
+
+const settings = await getArchiveSettings();
+const links = [
+  { label: "웹사이트", value: settings?.website },
+  { label: "이메일", value: settings?.email, href: settings?.email ? `mailto:${settings.email}` : undefined },
+  { label: "인스타그램", value: settings?.instagram },
+  { label: "유튜브", value: settings?.youtube },
+].filter((item) => item.value);
+---
+<ArchiveLayout title={`${settings?.title || "ohayo jay"} — 작가 소개`} description={settings?.bio}>
+  <main class="archive-wrap">
+    <ArchiveHeader back={{ href: "/", label: "여행 아카이브" }} />
+    <div class="archive-about-head">
+      <div class="archive-avatar"><ArchiveImage image={settings?.profileImage} label="프로필 사진" class="archive-media" eager /></div>
+      <div><h1>{settings?.title || "ohayo jay"}</h1>{settings?.role && <p class="archive-lead">{settings.role}</p>}</div>
+    </div>
+    {settings?.bio ? <p style="max-width:46ch">{settings.bio}</p> : <p class="archive-empty">Studio에서 작가 소개를 작성해 주세요.</p>}
+    {settings?.history?.length ? <section class="archive-section" style="margin-top:34px">
+      <div class="archive-section-head"><h2>이력</h2></div>
+      <ul class="archive-history">{settings.history.map((item) => <li>{item}</li>)}</ul>
+    </section> : null}
+    {links.length ? <section class="archive-section">
+      <div class="archive-section-head"><h2>연락과 링크</h2></div>
+      {links.map((item) => <div class="archive-key-value"><span>{item.label}</span><a href={item.href || item.value} target={item.href ? undefined : "_blank"} rel={item.href ? undefined : "noopener noreferrer"}>{item.value}</a></div>)}
+    </section> : null}
+  </main>
+</ArchiveLayout>

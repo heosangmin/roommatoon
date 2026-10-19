@@ -56,8 +56,27 @@ export default defineType({
         ],
       },
     }),
-    defineArrayMember({
+        defineArrayMember({
       type: 'code',
+    }),
+    defineArrayMember({
+      title: '사진',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      fields: [
+        {
+          name: 'alt',
+          title: '이미지 설명',
+          type: 'string',
+        },
+        {
+          name: 'caption',
+          title: '사진 아래 설명',
+          type: 'string',
+        },
+      ],
     }),
   ],
 })

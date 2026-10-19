@@ -17,6 +17,7 @@ export default defineCliConfig({
   },
   deployment: {
     autoUpdates: true,
+    appId: 'pkb6yzm5gfu30kmfkdrvhqm5',
   },
   studioHost: process.env.SANITY_STUDIO_STUDIO_HOST || '', // Visit https://www.sanity.io/docs/environment-variables to learn more about using environment variables for local & production.
 })
