@@ -1,0 +1,23 @@
+---
+import { buildSrcSet, urlFor } from "../utils/image";
+import type { SanityImage } from "../utils/sanity";
+
+const { node } = Astro.props as { node: SanityImage & { caption?: string } };
+---
+
+{node.asset && (
+  <figure>
+    <img
+      class="w-full h-auto"
+      src={urlFor(node).width(750).auto("format").quality(85).url()}
+      srcset={buildSrcSet(node, [375, 750, 1200], 85)}
+      sizes="(max-width: 800px) 100vw, 750px"
+      width={node.width}
+      height={node.height}
+      loading="lazy"
+      decoding="async"
+      alt={node.alt || ""}
+    />
+    {node.caption && <figcaption>{node.caption}</figcaption>}
+  </figure>
+)}

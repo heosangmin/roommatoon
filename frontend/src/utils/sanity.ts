@@ -42,6 +42,13 @@ export async function getPost(slug: string): Promise<Post> {
     groq`*[_type == "post" && slug.current == $slug][0] {
       ...,
       mainImage ${imageProjection},
+      body[]{
+        ...,
+        _type == "image" => {
+          "width": asset->metadata.dimensions.width,
+          "height": asset->metadata.dimensions.height
+        }
+      },
       seo {
         ...,
         ogImage ${imageProjection}

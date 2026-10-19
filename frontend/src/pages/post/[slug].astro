@@ -2,6 +2,7 @@
 import { PortableText } from "astro-portabletext";
 import { createDataAttribute } from "@sanity/visual-editing-csm";
 import CodeBlock from "../../components/CodeBlock.astro";
+import BodyImage from "../../components/BodyImage.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate } from "../../utils";
 import { urlFor, buildSrcSet } from "../../utils/image";
@@ -68,7 +69,7 @@ const ogImage = ogImageSource
         {formatDate(post._createdAt)}
       </p>
       <div class="prose prose-lg prose-serif mt-13 md:mt-21 max-w-none prose-blockquote:border-l-[5px] prose-blockquote:border-black prose-blockquote:pl-3 prose-blockquote:ml-5 prose-a:text-blue-600 prose-a:no-underline" data-sanity={dataAttr?.scope("body").toString()}>
-        <PortableText value={post.body} components={{ type: { code: CodeBlock } }} />
+        <PortableText value={post.body} components={{ type: { code: CodeBlock, image: BodyImage } }} />
       </div>
     </div>
   </section>
