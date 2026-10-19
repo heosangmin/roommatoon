@@ -1,5 +1,4 @@
 ---
-import { VisualEditing } from "@sanity/astro/visual-editing";
 import "../styles/global.css";
 
 interface Props {
@@ -11,9 +10,6 @@ interface Props {
 const { title, description, image } = Astro.props;
 const canonicalURL = Astro.url;
 
-// Enable visual editing overlays when the env variable is set to "true"
-const visualEditingEnabled =
-  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
 ---
 
 <!doctype html>
@@ -53,7 +49,6 @@ const visualEditingEnabled =
 
   </head>
   <body>
-    <VisualEditing enabled={visualEditingEnabled} />
     <div class="mx-auto sm:max-w-3xl sm:px-5">
       <header class="fixed left-0 right-0 top-0 z-10 flex border-b border-gray-200 bg-white px-1 sm:static sm:border-b-0 sm:bg-transparent sm:my-3 sm:py-2">
         <a class="font-extrabold text-lg leading-5 pl-2 my-3 no-underline text-black sm:my-3 sm:mb-2 sm:text-2xl" href="/">Astro + Sanity</a>
